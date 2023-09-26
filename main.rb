@@ -27,3 +27,28 @@ resp = off.get_book(request, nil)
 # Evaluate the response
 puts resp.isbn
 puts resp.title
+
+begin
+  # undefined property on requst object
+  off.get_book("", nil)
+rescue => e
+  puts "Failed Because get book can't meet the protocol of string"
+  puts e.inspect
+end
+
+begin
+  # wrong request object
+  bad_req = GetBookViaAuthor.new(author: "me")
+  off.get_book(bad_req, nil)
+rescue => e
+  puts "Failed because this is the wrong request type"
+  puts e.inspect
+end
+
+begin
+  # unimpemented
+  off.get_greatest_book(request, nil)
+rescue => e
+  puts "not implemented"
+  puts e.inspect
+end
