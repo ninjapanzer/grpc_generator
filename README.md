@@ -1,5 +1,7 @@
 # grpc_generator
 
+Multi language generator. Assumes some default configuration for each language and enforces artifact publishing patterns.
+
 ## To run
 load the env with direvn or `flake develop`
 
