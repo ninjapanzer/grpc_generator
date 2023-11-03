@@ -54,7 +54,7 @@ fn main() {
                 let output = Command::new ("which")
                     .arg("grpc_tools_ruby_protoc_plugin")
                     .output()
-                    .expect("things");
+                    .expect("GRPC Tools Ruby plugin not found");
                 args.push("--plugin=protoc-gen-grpc=".to_owned() + String::from_utf8_lossy(&output.stdout).trim_end());
                 args.push("--ruby_out=../../../../lang/ruby".to_string());
                 args.push("--grpc_out=../../../../lang/ruby".to_string());
@@ -67,13 +67,19 @@ fn main() {
             }
 
             if *python {
+                let pedantic_plugin_location = Command::new ("which")
+                    .arg("protoc-gen-protobuf-to-pydantic")
+                    .output()
+                    .expect("Pydantic plugin not found");
                 Command::new ("mkdir")
-                    .args(["-p", "../../../../lang/python/pyi"])
+                    .args(["-p", "../../../../lang/python"])
                     .output()
                     .expect("failed to execute process");
                 println!("printing python lists...");
+                args.push("--plugin=protoc-gen-protobuf-to-pydantic=".to_owned() + String::from_utf8_lossy(&pedantic_plugin_location.stdout).trim_end());
                 args.push("--python_out=../../../../lang/python".to_string());
-                args.push("--pyi_out=../../../../lang/python/pyi".to_string());
+                args.push("--pyi_out=../../../../lang/python".to_string());
+                args.push("--protobuf-to-pydantic_out=../../../../lang/python".to_string());
                 // Command::new("./pscript.sh").status().expect("Failed to run the Python script");
                 ran_any_command = true;
             }

@@ -1,4 +1,5 @@
 .direnv
 bin
+.venv
 lang/python
 lang/ruby
