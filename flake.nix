@@ -14,7 +14,14 @@
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
           packages = with pkgs; [ protobuf ruby_3_2 go ];
+          shellHook = ''
+            # Custom environment manipulations can go here
+            # Example: export PATH=$PATH:/path/to/custom/bin
+            gem install grpc-tools --bindir=./bin
+            export PATH=$(pwd)/bin:$PATH
+          '';
         };
+
       });
     };
 }
