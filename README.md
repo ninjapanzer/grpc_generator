@@ -1,7 +1,11 @@
 # grpc_generator
 
 ## To run
-`./run`
+load the env with direvn or `flake develop`
+
+`cargo build lib/cli`
+
+`lib/cli/cli generate --ruby --python sample...`
 
 ## To setup
 Install Direnv
