@@ -13,7 +13,7 @@
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          packages = with pkgs; [ protobuf buf ruby_3_2 ];
+          packages = with pkgs; [ protobuf ruby_3_2 go ];
         };
       });
     };
