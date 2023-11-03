@@ -1,1 +1,4 @@
 .direnv
+bin
+lang/python
+lang/ruby
