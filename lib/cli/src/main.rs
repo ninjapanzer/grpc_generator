@@ -59,16 +59,6 @@ fn main() {
                 args.push("--ruby_out=../../../../lang/ruby".to_string());
                 args.push("--grpc_out=../../../../lang/ruby".to_string());
                 args.push("--rbi_out=../../../../lang/ruby/rbi".to_string());
-                // let output = Command::new("protoc")
-                //     .args([
-                //         ("--plugin=protoc-gen-grpc=".to_owned() + String::from_utf8_lossy(&output.stdout).trim_end()).as_str(),
-                //         "--ruby_out=../../../../lang/ruby",
-                //         "--grpc_out=../../../../lang/ruby",
-                //         "--rbi_out=../../../../lang/ruby/rbi",
-                //         "--proto_path=../../../../",
-                //         path
-                //     ]).output()
-                //     .expect("failed to execute process");
                 println!("Standard Output: {}", String::from_utf8_lossy(&output.stdout));
                 println!("Standard Error: {}", String::from_utf8_lossy(&output.stderr));
                 // Command::new("./rscript.sh").status().expect("Failed to run the Ruby script");
