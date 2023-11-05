@@ -1,4 +1,4 @@
-use std::fs::create_dir_all;
+use std::fs::{ remove_dir_all, create_dir_all };
 use std::process::Command;
 use clap::{ Parser, Subcommand };
 use pathsearch::find_executable_in_path;
@@ -12,18 +12,19 @@ struct ProtoToPackage {
     /// Path to output
     #[arg(short, long, default_value="./lang")]
     lang_path: String,
+    /// Path to includes
+    #[arg(short, long, default_value="./includes")]
+    includes: String,
 }
 
 #[derive(Subcommand)]
 enum GenerateCommands {
+    Clear {},
     /// does testing things
     Generate {
         /// Path to .proto files
         // #[arg(short, long, default_value=".")]
         path: String,
-        /// Path to includes
-        #[arg(short, long, default_value="./includes")]
-        includes: String,
         /// Generate Ruby Proto Classes
         #[arg(short, long)]
         ruby: bool,
@@ -48,6 +49,15 @@ fn find_plugin(exe: &str) -> Result<String, &'static str> {
 
 fn main() {
     let cli = ProtoToPackage::parse();
+    match &cli.generate {
+        Some(GenerateCommands::Clear {
+                 ..
+             }) => {
+            remove_dir_all(cli.lang_path.clone())
+                .expect("failed to remove directory");
+        }
+        _ => {}
+    }
     match &cli.generate {
         Some(GenerateCommands::Generate {
                  ruby,
@@ -99,8 +109,6 @@ fn main() {
                 let output_path = cli.lang_path.clone() + "/oas";
                 create_dir_all(output_path.clone())
                     .expect("failed to create directory");
-                let oas_plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
-                    .expect("GRPC Tools Ruby plugin not found");
                 let oas_plugin_location = find_plugin("protoc-gen-oas")
                     .expect("GRPC Tools Python plugin not found");
                 args.push("--plugin=protoc-gen-oas=".to_owned() + oas_plugin_location.trim_end());
@@ -116,7 +124,9 @@ fn main() {
                     .args([
                         "--proto_path=../../../../",
                         path
-                    ]).output()
+                    ])
+                    .args(["-I", cli.includes.as_str()])
+                    .output()
                     .expect("failed to execute process");
                 println!("status: {}", output.status);
                 println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
