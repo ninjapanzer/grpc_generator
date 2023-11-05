@@ -3,3 +3,5 @@ bin
 .venv
 lang/python
 lang/ruby
+lang/javascript
+lang/oas

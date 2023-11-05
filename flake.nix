@@ -16,7 +16,7 @@
           packages = with pkgs; [
             protobuf
             ruby_3_2
-            go
+            go_1_20
             python310
             python310Packages.protobuf
             python310Packages.grpcio-tools
@@ -27,6 +27,10 @@
             # Custom environment manipulations can go here
             # Example: export PATH=$PATH:/path/to/custom/bin
             go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+            ## Intentionally using old version of OAS to support go_1_20
+            ## When we move to go_1_21 we can switch to 0.7.0 or latest
+            go install github.com/ogen-go/protoc-gen-oas/cmd/protoc-gen-oas@v0.4.0
             python -m venv .venv
             source .venv/bin/activate
             python -m ensurepip --upgrade

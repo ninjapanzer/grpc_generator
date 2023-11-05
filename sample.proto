@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "service/v1;service";
+
 message Book {
     int64 isbn = 1;
     string title = 2;
