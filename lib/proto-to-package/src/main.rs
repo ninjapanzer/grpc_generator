@@ -8,7 +8,7 @@ use pathsearch::find_executable_in_path;
 struct ProtoToPackage {
     /// Generate Proto Classes
     #[command(subcommand)]
-    commands: Option<GenerateCommands>,
+    commands: Option<Commands>,
     /// Path to output
     #[arg(short, long, default_value="./lang")]
     lang_path: String,
@@ -18,7 +18,7 @@ struct ProtoToPackage {
 }
 
 #[derive(Subcommand)]
-enum GenerateCommands {
+enum Commands {
     Clear {},
     /// Generate From Protos
     Generate {
@@ -50,7 +50,7 @@ fn find_plugin(exe: &str) -> Result<String, &'static str> {
 fn main() {
     let cli = ProtoToPackage::parse();
     match &cli.commands {
-        Some(GenerateCommands::Clear {
+        Some(Commands::Clear {
                  ..
              }) => {
             remove_dir_all(cli.lang_path.clone())
@@ -59,7 +59,7 @@ fn main() {
         _ => {}
     }
     match &cli.commands {
-        Some(GenerateCommands::Generate {
+        Some(Commands::Generate {
                  ruby,
                  python,
                  javascript,
