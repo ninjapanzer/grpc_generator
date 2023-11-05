@@ -1,10 +1,7 @@
+use std::fs::create_dir_all;
 use std::process::Command;
 use clap::{ Parser, Subcommand };
-use clap::parser::ValueSource::CommandLine;
-// use std::path::PathBuf;
-// mod python
-// mod ruby
-// mod javascript
+use pathsearch::find_executable_in_path;
 
 // use git_events::GitEvents;
 
@@ -38,6 +35,13 @@ enum GenerateCommands {
     },
 }
 
+fn find_plugin(exe: &str) -> Result<String, &'static str> {
+    match find_executable_in_path(exe) {
+        Some(path) => Ok(path.to_str().unwrap().to_string()),
+        None => Err("failed to find plugin"),
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
     match &cli.generate {
@@ -47,46 +51,33 @@ fn main() {
 
             if *ruby {
                 println!("printing ruby lists...");
-                Command::new ("mkdir")
-                    .args(["-p", "../../../../lang/ruby/rbi"])
-                    .output()
-                    .expect("failed to execute process");
-                let output = Command::new ("which")
-                    .arg("grpc_tools_ruby_protoc_plugin")
-                    .output()
+                create_dir_all("../../../../lang/ruby/rbi")
+                    .expect("failed to create directory");
+                let plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Ruby plugin not found");
-                args.push("--plugin=protoc-gen-grpc=".to_owned() + String::from_utf8_lossy(&output.stdout).trim_end());
+
+                args.push("--plugin=protoc-gen-grpc=".to_owned() + plugin_path.as_str());
                 args.push("--ruby_out=../../../../lang/ruby".to_string());
                 args.push("--grpc_out=../../../../lang/ruby".to_string());
                 args.push("--rbi_out=../../../../lang/ruby/rbi".to_string());
-                println!("Standard Output: {}", String::from_utf8_lossy(&output.stdout));
-                println!("Standard Error: {}", String::from_utf8_lossy(&output.stderr));
-                // Command::new("./rscript.sh").status().expect("Failed to run the Ruby script");
-                // Command::new("./rscript.sh").status().expect("Failed to run the Ruby script");
                 ran_any_command = true;
             }
 
             if *python {
-                let pedantic_plugin_location = Command::new ("which")
-                    .arg("protoc-gen-protobuf-to-pydantic")
-                    .output()
-                    .expect("Pydantic plugin not found");
-                Command::new ("mkdir")
-                    .args(["-p", "../../../../lang/python"])
-                    .output()
-                    .expect("failed to execute process");
+                create_dir_all("../../../../lang/python")
+                    .expect("failed to create directory");
+                let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
+                    .expect("GRPC Tools Python plugin not found");
                 println!("printing python lists...");
-                args.push("--plugin=protoc-gen-protobuf-to-pydantic=".to_owned() + String::from_utf8_lossy(&pedantic_plugin_location.stdout).trim_end());
+                args.push("--plugin=protoc-gen-protobuf-to-pydantic=".to_owned() + pedantic_plugin_location.trim_end());
                 args.push("--python_out=../../../../lang/python".to_string());
                 args.push("--pyi_out=../../../../lang/python".to_string());
                 args.push("--protobuf-to-pydantic_out=../../../../lang/python".to_string());
-                // Command::new("./pscript.sh").status().expect("Failed to run the Python script");
                 ran_any_command = true;
             }
 
             if *javascript {
                 println!("printing javascript lists...");
-                // Command::new("./jscript.sh").status().expect("Failed to run the JavaScript script");
                 ran_any_command = true;
             }
 
@@ -100,8 +91,6 @@ fn main() {
                         path
                     ]).output()
                     .expect("failed to execute process");
-                println!("Standard Output: {}", String::from_utf8_lossy(&output.stdout));
-                println!("Standard Error: {}", String::from_utf8_lossy(&output.stderr));
             }
         }
         _ => {}
