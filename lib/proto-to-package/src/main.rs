@@ -5,7 +5,7 @@ use pathsearch::find_executable_in_path;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
-struct Cli {
+struct ProtoToPackage {
     /// Generate Proto Classes
     #[command(subcommand)]
     generate: Option<GenerateCommands>,
@@ -47,7 +47,7 @@ fn find_plugin(exe: &str) -> Result<String, &'static str> {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let cli = ProtoToPackage::parse();
     match &cli.generate {
         Some(GenerateCommands::Generate {
                  ruby,
@@ -66,9 +66,9 @@ fn main() {
                 let plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Ruby plugin not found");
 
-                args.push("--plugin=protoc-gen-grpc=".to_owned() + plugin_path.as_str());
+                args.push("--plugin=protoc-gen-grpc_ruby=".to_owned() + plugin_path.as_str());
                 args.push("--ruby_out=../../../../lang/ruby".to_string());
-                args.push("--grpc_out=../../../../lang/ruby".to_string());
+                args.push("--grpc_ruby_out=../../../../lang/ruby".to_string());
                 args.push("--rbi_out=../../../../lang/ruby/rbi".to_string());
                 ran_any_command = true;
             }
@@ -79,7 +79,11 @@ fn main() {
                     .expect("failed to create directory");
                 let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
                     .expect("GRPC Tools Python plugin not found");
+                let grpcio_plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
+                    .expect("GRPC Tools Python plugin not found");
                 args.push("--plugin=protoc-gen-protobuf-to-pydantic=".to_owned() + pedantic_plugin_location.trim_end());
+                args.push("--plugin=protoc-gen-grpc_python=".to_owned() + grpcio_plugin_path.trim_end());
+                args.push("--grpc_python_out=../../../../lang/python".to_string());
                 args.push("--python_out=../../../../lang/python".to_string());
                 args.push("--pyi_out=../../../../lang/python".to_string());
                 args.push("--protobuf-to-pydantic_out=../../../../lang/python".to_string());
