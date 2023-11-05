@@ -1,6 +1,10 @@
 syntax = "proto3";
 
+package service.v1;
+
 option go_package = "service/v1;service";
+
+import "google/api/annotations.proto";
 
 message Book {
     int64 isbn = 1;
@@ -17,7 +21,11 @@ message GetBookViaAuthor {
 }
 
 service BookService {
-    rpc GetBook (GetBookRequest) returns (Book) {}
+    rpc GetBook (GetBookRequest) returns (Book) {
+        option (google.api.http) = {
+            get: "/v1/{isbn}"
+        };
+    }
     rpc GetBooksViaAuthor (GetBookViaAuthor) returns (stream Book) {}
     rpc GetGreatestBook (stream GetBookRequest) returns (Book) {}
     rpc GetBooks (stream GetBookRequest) returns (stream Book) {}

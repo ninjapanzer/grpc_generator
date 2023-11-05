@@ -26,7 +26,13 @@
           shellHook = ''
             # Custom environment manipulations can go here
             # Example: export PATH=$PATH:/path/to/custom/bin
+            curl -o api-common-protos.zip -L "https://github.com/googleapis/api-common-protos/archive/refs/heads/main.zip" && \
+            unzip -uf api-common-protos.zip && \
+            rm api-common-protos.zip
+
+
             go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+            go install google.golang.org/genproto/googleapis@v0.0.0-20231030173426-d783a09b4405
 
             ## Intentionally using old version of OAS to support go_1_20
             ## When we move to go_1_21 we can switch to 0.7.0 or latest
