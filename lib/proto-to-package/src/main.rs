@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use pathsearch::find_executable_in_path;
 use std::fs::{create_dir_all, remove_dir_all};
+use std::path::Path;
 use std::process::Command;
 
 #[derive(Parser)]
@@ -42,7 +43,7 @@ enum Commands {
 
 fn find_plugin(exe: &str) -> Result<String, &'static str> {
     match find_executable_in_path(exe) {
-        Some(path) => Ok(path.to_str().unwrap().to_string()),
+        Some(path) => Ok(path.to_str().unwrap().trim_end().to_string()),
         None => Err("failed to find plugin"),
     }
 }
@@ -94,35 +95,35 @@ fn main() {
 
             if *ruby {
                 let output_path = cli.output.clone();
-                create_dir_all(output_path + "/ruby/rbi").expect("failed to create directory");
+                let ruby_output_path = output_path + "/ruby";
+                let rbi_output_path = String::from(&ruby_output_path) + "/rbi";
+                create_dir_all(&rbi_output_path).expect("failed to create directory");
+
                 let plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Ruby plugin not found");
 
-                args.push("--plugin=protoc-gen-grpc_ruby=".to_owned() + plugin_path.as_str());
-                args.push("--ruby_out=../../../../lang/ruby".to_string());
-                args.push("--grpc_ruby_out=../../../../lang/ruby".to_string());
-                args.push("--rbi_out=../../../../lang/ruby/rbi".to_string());
+                args.push(format!("{}{}", "--plugin=protoc-gen-grpc_ruby=", plugin_path));
+                args.push(format!("{}{}", "--ruby_out=", &ruby_output_path));
+                args.push(format!("{}{}", "--grpc_ruby_out=", &ruby_output_path));
+                args.push(format!("{}{}", "--rbi_out=", &rbi_output_path));
                 ran_any_command = true;
             }
 
             if *python {
-                let output_path = cli.output.clone();
-                create_dir_all(output_path + "/python").expect("failed to create directory");
+                let python_output_path = cli.output.clone() + "/python";
+                create_dir_all(&python_output_path).expect("failed to create directory");
+
                 let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
                     .expect("GRPC Tools Python plugin not found");
                 let grpcio_plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Python plugin not found");
-                args.push(
-                    "--plugin=protoc-gen-protobuf-to-pydantic=".to_owned()
-                        + pedantic_plugin_location.trim_end(),
-                );
-                args.push(
-                    "--plugin=protoc-gen-grpc_python=".to_owned() + grpcio_plugin_path.trim_end(),
-                );
-                args.push("--grpc_python_out=../../../../lang/python".to_string());
-                args.push("--python_out=../../../../lang/python".to_string());
-                args.push("--pyi_out=../../../../lang/python".to_string());
-                args.push("--protobuf-to-pydantic_out=../../../../lang/python".to_string());
+
+                args.push(format!("{}{}", "--plugin=protoc-gen-protobuf-to-pydantic=", pedantic_plugin_location));
+                args.push(format!("{}{}", "--plugin=protoc-gen-grpc_python=", grpcio_plugin_path));
+                args.push(format!("{}{}", "--grpc_python_out=", &python_output_path));
+                args.push(format!("{}{}", "--python_out=", &python_output_path));
+                args.push(format!("{}{}", "--pyi_out=", &python_output_path));
+                args.push(format!("{}{}", "--protobuf-to-pydantic_out=", &python_output_path));
                 ran_any_command = true;
             }
 
@@ -132,22 +133,32 @@ fn main() {
             }
 
             if *oas {
-                let output_path = cli.output.clone() + "/oas";
-                create_dir_all(output_path.clone()).expect("failed to create directory");
+                let oas_output_path = cli.output.clone() + "/oas";
+                create_dir_all(&oas_output_path).expect("failed to create directory");
+
                 let oas_plugin_location =
                     find_plugin("protoc-gen-oas").expect("GRPC Tools Python plugin not found");
-                args.push("--plugin=protoc-gen-oas=".to_owned() + oas_plugin_location.trim_end());
-                args.push("--oas_out=".to_string() + output_path.clone().as_str());
+
+                args.push(format!("{}{}", "--plugin=protoc-gen-oas=", oas_plugin_location));
+                args.push(format!("{}{}", "--oas_out=", &oas_output_path));
                 ran_any_command = true;
             }
 
             if !ran_any_command {
                 println!("Not printing testing lists...");
             } else {
+                let includes_dir = cli.includes.clone();
+                let source_dir = Path::new(path).parent().unwrap().to_str()
+                    .expect("failed to get parent path");
                 let output = Command::new("protoc")
                     .args(args)
-                    .args(["--proto_path=../../../../", path])
-                    .args(["-I", cli.includes.as_str()])
+                    .args([
+                        // Path for external includes
+                        format!("{}{}", "--proto_path=", &includes_dir),
+                        // Path enclosing the source proto file
+                        format!("{}{}", "--proto_path=", &source_dir),
+                        path.to_string()
+                    ])
                     .output()
                     .expect("failed to execute process");
                 println!("status: {}", output.status);
