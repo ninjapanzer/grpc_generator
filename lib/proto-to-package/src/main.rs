@@ -4,6 +4,8 @@ use std::fs::{create_dir_all, remove_dir_all};
 use std::path::Path;
 use std::process::Command;
 
+mod package;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct ProtoToPackage {
@@ -104,6 +106,22 @@ fn find_plugin(exe: &str) -> Result<String, &'static str> {
 /// This function doesn't produce any errors.
 fn main() {
     let cli = ProtoToPackage::parse();
+
+    match &cli.commands {
+        Some(Commands::Package { python, .. }) => {
+            if *python {
+                /// Does nothing but getting this stubbed out
+                let python_package = package::python::Python {
+                    template_path: String::from("./templates/python"),
+                    output_path: String::from("./artifacts/python"),
+                    package_name: String::from("python"),
+                };
+                python_package.create();
+            }
+        }
+        _ => {}
+    }
+
     match &cli.commands {
         Some(Commands::Clear { .. }) => {
             remove_dir_all(cli.output.clone()).expect("failed to remove directory");
