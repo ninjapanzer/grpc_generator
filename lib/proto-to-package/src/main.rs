@@ -11,7 +11,7 @@ struct ProtoToPackage {
     commands: Option<Commands>,
     /// Path to output
     #[arg(short, long, default_value = "./lang")]
-    lang_path: String,
+    output: String,
     /// Path to includes
     #[arg(short, long, default_value = "./includes")]
     includes: String,
@@ -47,11 +47,36 @@ fn find_plugin(exe: &str) -> Result<String, &'static str> {
     }
 }
 
+/// Exposes a convenience CLI to generate code from Protobuf files.
+///
+/// # Commands
+///
+/// * `generate` - used to generate code from Protobuf files.
+/// * `clear` - used to clear the output directory.
+///
+/// # Generate
+/// ## Arguments
+/// * `path` - Path to the Protobuf files.
+/// * `output` - Path to the output directory.
+/// * `includes` - Path to the includes directory.
+/// * `ruby` - Generate Ruby code.
+/// * `python` - Generate Python code.
+/// * `javascript` - Generate JavaScript code.
+/// * `oas` - Generate OASv3 YAML.
+///
+/// ```
+/// let result = my_crate::utils::add(2, 3);
+/// assert_eq!(result, 5);
+/// ```
+///
+/// # Errors
+///
+/// This function doesn't produce any errors.
 fn main() {
     let cli = ProtoToPackage::parse();
     match &cli.commands {
         Some(Commands::Clear { .. }) => {
-            remove_dir_all(cli.lang_path.clone()).expect("failed to remove directory");
+            remove_dir_all(cli.output.clone()).expect("failed to remove directory");
         }
         _ => {}
     }
@@ -68,7 +93,7 @@ fn main() {
             let mut args = vec![];
 
             if *ruby {
-                let output_path = cli.lang_path.clone();
+                let output_path = cli.output.clone();
                 create_dir_all(output_path + "/ruby/rbi").expect("failed to create directory");
                 let plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Ruby plugin not found");
@@ -81,7 +106,7 @@ fn main() {
             }
 
             if *python {
-                let output_path = cli.lang_path.clone();
+                let output_path = cli.output.clone();
                 create_dir_all(output_path + "/python").expect("failed to create directory");
                 let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
                     .expect("GRPC Tools Python plugin not found");
@@ -107,7 +132,7 @@ fn main() {
             }
 
             if *oas {
-                let output_path = cli.lang_path.clone() + "/oas";
+                let output_path = cli.output.clone() + "/oas";
                 create_dir_all(output_path.clone()).expect("failed to create directory");
                 let oas_plugin_location =
                     find_plugin("protoc-gen-oas").expect("GRPC Tools Python plugin not found");
