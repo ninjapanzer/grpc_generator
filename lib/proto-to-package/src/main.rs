@@ -45,16 +45,29 @@ enum Commands {
     Package {
         #[arg()]
         package: String,
-        /// Generate Ruby Proto Classes
+        /// Generate Ruby Proto Gem
         #[arg(short, long)]
         ruby: bool,
-        /// Generate Python Proto Classes
+        /// Generate Python Whl
         #[arg(short, long)]
         python: bool,
-        /// Generate JavaScript Proto Classes
+        /// Generate JavaScript Package
         #[arg(short, long)]
         javascript: bool,
-    }
+    },
+    Publish {
+        #[arg()]
+        version: String,
+        /// Publish Ruby Gem To GHPackages
+        #[arg(short, long)]
+        ruby: bool,
+        /// Publish Python Whl to S3
+        #[arg(short, long)]
+        python: bool,
+        /// Publish Package to GHPackages
+        #[arg(short, long)]
+        javascript: bool,
+    },
 }
 
 fn find_plugin(exe: &str) -> Result<String, &'static str> {
