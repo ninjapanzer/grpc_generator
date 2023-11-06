@@ -11,20 +11,22 @@ struct ProtoToPackage {
     #[command(subcommand)]
     commands: Option<Commands>,
     /// Path to output
-    #[arg(short, long, default_value = "./lang")]
+    #[arg(short, long, default_value = "./artifacts/lang")]
     output: String,
     /// Path to includes
-    #[arg(short, long, default_value = "./includes")]
+    #[arg(short, long, default_value = "./include_protos")]
     includes: String,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     Clear {},
-    /// Generate From Protos
+    //@ Generate Artifacts from Protos
+    /// # Example
+    /// ./proto-to-package --output ../../../../artifacts/lang --includes ../../../../api-common-protos-main generate ../../../../*.proto --python --ruby --oas
     Generate {
         /// Path to .proto files
-        // #[arg(short, long, default_value=".")]
+        #[arg(default_value="./*.proto")]
         path: String,
         /// Generate Ruby Proto Classes
         #[arg(short, long)]
@@ -39,6 +41,20 @@ enum Commands {
         #[arg(short, long)]
         oas: bool,
     },
+    /// Create Packages from Artifacts
+    Package {
+        #[arg()]
+        package: String,
+        /// Generate Ruby Proto Classes
+        #[arg(short, long)]
+        ruby: bool,
+        /// Generate Python Proto Classes
+        #[arg(short, long)]
+        python: bool,
+        /// Generate JavaScript Proto Classes
+        #[arg(short, long)]
+        javascript: bool,
+    }
 }
 
 fn find_plugin(exe: &str) -> Result<String, &'static str> {
@@ -157,6 +173,7 @@ fn main() {
                         format!("{}{}", "--proto_path=", &includes_dir),
                         // Path enclosing the source proto file
                         format!("{}{}", "--proto_path=", &source_dir),
+                        // Path to target proto file
                         path.to_string()
                     ])
                     .output()
