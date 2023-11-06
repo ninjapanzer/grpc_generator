@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+output_dir/
+├── pyproject.toml
+├── README.md
+└── my_package_name/
+    ├── __init__.py
+    └── ... (stub files and pydantic files)

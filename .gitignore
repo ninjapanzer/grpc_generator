@@ -2,5 +2,5 @@
 bin
 .venv
 api-common-protos-main
-lang/artifacts
-lang/packages
+artifacts/lang
+packages/lang
