@@ -1,0 +1,24 @@
+[build-system]
+requires = [
+    "setuptools >= 40.9.0"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "${kebab_package_name}"
+version = "${package_version}"
+authors = [
+    {name = "${package_author}", email = "${package_author_email}"}
+]
+description = "Python Protobuf stubs for ${title_package_name}"
+requires-python = ">=3.9"
+
+dependencies = [
+    "protobuf >= 4.24.0",
+    "pydantic >= 1.10.0"
+]
+
+
+[tool.setuptools]
+packages = ["${snake_package_name}"]
+
