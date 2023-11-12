@@ -3,6 +3,7 @@ use pathsearch::find_executable_in_path;
 use std::fs::{create_dir_all, remove_dir_all};
 use std::path::Path;
 use std::process::Command;
+use package::{python as PackagePython};
 
 mod package;
 
@@ -110,13 +111,12 @@ fn main() {
     match &cli.commands {
         Some(Commands::Package { python, .. }) => {
             if *python {
-                /// Does nothing but getting this stubbed out
-                let python_package = package::python::Python {
-                    template_path: String::from("./templates/python"),
-                    output_path: String::from("./artifacts/python"),
-                    package_name: String::from("python"),
-                };
-                python_package.create();
+                // Does nothing but getting this stubbed out
+                PackagePython::create(
+                    None,
+                    "python",
+                    "./artifacts/python",
+                );
             }
         }
         _ => {}
