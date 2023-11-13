@@ -105,7 +105,7 @@ fn create_import(file: &PathBuf, ) -> String {
 fn write_package(package: &PythonPackage, package_name: &str, output_path: &str) -> bool {
     println!("Writing Python Package: {} to {}/{}", package_name, output_path, package_name);
     create_dir_all(format!("{}/{}", output_path, package_name)).expect("failed to create directory");
-    std::fs::write(format!("{}/pyproject.toml", output_path), package.toml.as_bytes()).expect("failed to write toml file");
+    std::fs::write(format!("{}/{}.toml", output_path, package_name), package.toml.as_bytes()).expect("failed to write toml file");
     std::fs::write(format!("{}/README.md", output_path), package.readme.as_bytes()).expect("failed to write readme file");
     std::fs::write(format!("{}/{}/__init__.py", output_path, package_name), package.init.as_bytes()).expect("failed to write init file");
     package.files.as_ref().unwrap().iter().for_each(|file| {
