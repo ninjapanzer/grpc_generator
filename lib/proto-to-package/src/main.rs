@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 use pathsearch::find_executable_in_path;
 use std::fs::{create_dir_all, remove_dir_all};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use package::{python as PackagePython};
+use walkdir::WalkDir;
 
 mod package;
 
@@ -48,6 +49,8 @@ enum Commands {
     Package {
         #[arg()]
         package: String,
+        #[arg()]
+        artifacts: String,
         /// Generate Ruby Proto Gem
         #[arg(short, long)]
         ruby: bool,
@@ -109,13 +112,21 @@ fn main() {
     let cli = ProtoToPackage::parse();
 
     match &cli.commands {
-        Some(Commands::Package { python, .. }) => {
+        Some(Commands::Package { python, package, artifacts, .. }) => {
+            let mut files: Vec<PathBuf> = Vec::new();
+            for entry in WalkDir::new(artifacts).into_iter().filter_map(|e| e.ok()) {
+                let entry = entry.path();
+                if entry.is_file() {
+                    files.push(entry.to_path_buf());
+                };
+            }
             if *python {
                 // Does nothing but getting this stubbed out
                 PackagePython::create(
                     None,
-                    "python",
-                    "./artifacts/python",
+                    package,
+                    &cli.output.clone(),
+                    files.clone(),
                 );
             }
         }
