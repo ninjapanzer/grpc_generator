@@ -34,12 +34,17 @@ impl RubyPackage {
                 // }
                 RubyPackage::default()
             }
-            None => RubyPackage::default()
+            None => RubyPackage::default(),
         }
     }
 }
 
-pub fn create(template_path: Option<String>, package_name: &str, output_path: &str, generated_files: Vec<PathBuf>) -> bool {
+pub fn create(
+    template_path: Option<String>,
+    package_name: &str,
+    output_path: &str,
+    generated_files: Vec<PathBuf>,
+) -> bool {
     let template = RubyPackage::check_template(template_path);
 
     let package = RubyPackage {

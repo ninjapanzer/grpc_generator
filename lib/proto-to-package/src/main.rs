@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
+use package::python as PackagePython;
 use pathsearch::find_executable_in_path;
 use std::fs::{create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use package::{python as PackagePython};
 use walkdir::WalkDir;
 
 mod package;
@@ -30,11 +30,14 @@ enum Commands {
     /// ./proto-to-package --output ../../../../artifacts/lang --includes ../../../../api-common-protos-main generate ../../../../*.proto --python --ruby --oas
     Generate {
         /// Path to .proto files
-        #[arg(default_value="./*.proto")]
+        #[arg(default_value = "./*.proto")]
         path: String,
         /// Generate Ruby Proto Classes
         #[arg(short, long)]
         ruby: bool,
+        /// Generate with Ruby Experimental Features
+        #[arg(long, default_value = "false")]
+        ruby_experimental: bool,
         /// Generate Python Proto Classes
         #[arg(short, long)]
         python: bool,
@@ -112,7 +115,12 @@ fn main() {
     let cli = ProtoToPackage::parse();
 
     match &cli.commands {
-        Some(Commands::Package { python, package, artifacts, .. }) => {
+        Some(Commands::Package {
+            python,
+            package,
+            artifacts,
+            ..
+        }) => {
             let mut files: Vec<PathBuf> = Vec::new();
             for entry in WalkDir::new(artifacts).into_iter().filter_map(|e| e.ok()) {
                 let entry = entry.path();
@@ -122,12 +130,7 @@ fn main() {
             }
             if *python {
                 // Does nothing but getting this stubbed out
-                PackagePython::create(
-                    None,
-                    package,
-                    &cli.output.clone(),
-                    files.clone(),
-                );
+                PackagePython::create(None, package, &cli.output.clone(), files.clone());
             }
         }
         _ => {}
@@ -142,6 +145,7 @@ fn main() {
     match &cli.commands {
         Some(Commands::Generate {
             ruby,
+            ruby_experimental,
             python,
             javascript,
             path,
@@ -159,10 +163,20 @@ fn main() {
 
                 let plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
                     .expect("GRPC Tools Ruby plugin not found");
-
-                args.push(format!("{}{}", "--plugin=protoc-gen-grpc_ruby=", plugin_path));
-                args.push(format!("{}{}", "--ruby_out=", &ruby_output_path));
+                args.push(format!(
+                    "{}{}",
+                    "--plugin=protoc-gen-grpc_ruby=", plugin_path
+                ));
                 args.push(format!("{}{}", "--grpc_ruby_out=", &ruby_output_path));
+
+                if *ruby_experimental {
+                    let rbs_plugin_path =
+                        find_plugin("protoc-gen-rbs").expect("RBS Ruby plugin not found");
+                    args.push(format!("{}{}", "--plugin=protoc-gen-rbs=", rbs_plugin_path));
+                    args.push(format!("{}{}", "--rbs_out=", &ruby_output_path));
+                }
+
+                args.push(format!("{}{}", "--ruby_out=", &ruby_output_path));
                 args.push(format!("{}{}", "--rbi_out=", &rbi_output_path));
                 ran_any_command = true;
             }
@@ -176,12 +190,21 @@ fn main() {
                 let grpcio_plugin_path = find_plugin("protoc-gen-grpclib_python")
                     .expect("GRPC Tools Python plugin not found");
 
-                args.push(format!("{}{}", "--plugin=protoc-gen-protobuf-to-pydantic=", pedantic_plugin_location));
-                args.push(format!("{}{}", "--plugin=protoc-gen-grpc_python=", grpcio_plugin_path));
+                args.push(format!(
+                    "{}{}",
+                    "--plugin=protoc-gen-protobuf-to-pydantic=", pedantic_plugin_location
+                ));
+                args.push(format!(
+                    "{}{}",
+                    "--plugin=protoc-gen-grpc_python=", grpcio_plugin_path
+                ));
                 args.push(format!("{}{}", "--grpc_python_out=", &python_output_path));
                 args.push(format!("{}{}", "--python_out=", &python_output_path));
                 args.push(format!("{}{}", "--pyi_out=", &python_output_path));
-                args.push(format!("{}{}", "--protobuf-to-pydantic_out=", &python_output_path));
+                args.push(format!(
+                    "{}{}",
+                    "--protobuf-to-pydantic_out=", &python_output_path
+                ));
                 ran_any_command = true;
             }
 
@@ -197,7 +220,10 @@ fn main() {
                 let oas_plugin_location =
                     find_plugin("protoc-gen-oas").expect("GRPC Tools Python plugin not found");
 
-                args.push(format!("{}{}", "--plugin=protoc-gen-oas=", oas_plugin_location));
+                args.push(format!(
+                    "{}{}",
+                    "--plugin=protoc-gen-oas=", oas_plugin_location
+                ));
                 args.push(format!("{}{}", "--oas_out=", &oas_output_path));
                 ran_any_command = true;
             }
@@ -206,7 +232,10 @@ fn main() {
                 println!("Not printing testing lists...");
             } else {
                 let includes_dir = cli.includes.clone();
-                let source_dir = Path::new(path).parent().unwrap().to_str()
+                let source_dir = Path::new(path)
+                    .parent()
+                    .unwrap()
+                    .to_str()
                     .expect("failed to get parent path");
                 let output = Command::new("protoc")
                     .args(args)
@@ -216,7 +245,7 @@ fn main() {
                         // Path enclosing the source proto file
                         format!("{}{}", "--proto_path=", &source_dir),
                         // Path to target proto file
-                        path.to_string()
+                        path.to_string(),
                     ])
                     .output()
                     .expect("failed to execute process");

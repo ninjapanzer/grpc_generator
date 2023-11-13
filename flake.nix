@@ -43,8 +43,11 @@
             python -m ensurepip --upgrade
             pip install --upgrade pip
             pip install protobuf_to_pydantic
+            gem install protobuf --bindir=./bin
             gem install grpc-tools --bindir=./bin
+            gem install rbs_protobuf --bindir=./bin
             export PATH=$(pwd)/bin:$PATH
+            export RBS_PROTOBUF_BACKEND=protobuf
           '';
         };
 
