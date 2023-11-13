@@ -20,6 +20,7 @@
             python310
             python310Packages.protobuf
             python310Packages.grpcio-tools
+            python310Packages.grpclib
             python310Packages.mypy-protobuf
             python310Packages.toml
           ];
