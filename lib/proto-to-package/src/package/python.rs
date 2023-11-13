@@ -78,21 +78,28 @@ fn build_readme(template: &PythonPackage, package_name: &str) -> String {
 }
 
 fn build_init(template: &PythonPackage, files: &Vec<PathBuf>, package_name: &str) -> String {
-    let snake_package_name = package_name;
-    let package_name = package_name.replace("_", " ");
     let mut imports: Vec<String> = vec![];
     // from .GreatThingRequest_p2p import GreatThingProperties, GreatThingRequest
 
     files.iter().for_each(|f| {
+        if f.file_name().unwrap().to_string_lossy().ends_with("_grpc.py") {
+            imports.push(create_import(&f));
+        }
         if f.file_name().unwrap().to_string_lossy().ends_with("_p2p.py") {
-            let file_name = f.file_name().unwrap().to_string_lossy().replace(".py", "");
-            let classes = python_parser::Parser::collect_classes(&f).classes.join(", ");
-            imports.push(format!("from .{}_p2p import {}", file_name, classes));
+            imports.push(create_import(&f));
         }
     });
 
+    imports.sort_by_key(|s| (!s.to_lowercase().contains("grpc"), s.clone()));
+
     template.init
         .replace("${imports}", imports.join("\n").as_str())
+}
+
+fn create_import(file: &PathBuf, ) -> String {
+    let file_name = file.file_name().unwrap().to_string_lossy().replace(".py", "");
+    let classes = python_parser::Parser::collect_classes(&file).classes.join(", ");
+    format!("from .{} import {}", file_name, classes)
 }
 
 fn write_package(package: &PythonPackage, package_name: &str, output_path: &str) -> bool {

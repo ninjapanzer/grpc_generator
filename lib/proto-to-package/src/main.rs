@@ -173,7 +173,7 @@ fn main() {
 
                 let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
                     .expect("GRPC Tools Python plugin not found");
-                let grpcio_plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
+                let grpcio_plugin_path = find_plugin("protoc-gen-grpclib_python")
                     .expect("GRPC Tools Python plugin not found");
 
                 args.push(format!("{}{}", "--plugin=protoc-gen-protobuf-to-pydantic=", pedantic_plugin_location));
