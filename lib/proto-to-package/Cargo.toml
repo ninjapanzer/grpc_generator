@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
 pathsearch = { version = "0.2.0" }
+walkdir = { version = "2.4.0" }
+rustpython-parser = { version = "0.3.0" }

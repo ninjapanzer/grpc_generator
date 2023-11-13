@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 use pathsearch::find_executable_in_path;
 use std::fs::{create_dir_all, remove_dir_all};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use package::{python as PackagePython};
+use walkdir::WalkDir;
 
 mod package;
 
@@ -47,6 +49,8 @@ enum Commands {
     Package {
         #[arg()]
         package: String,
+        #[arg()]
+        artifacts: String,
         /// Generate Ruby Proto Gem
         #[arg(short, long)]
         ruby: bool,
@@ -108,15 +112,22 @@ fn main() {
     let cli = ProtoToPackage::parse();
 
     match &cli.commands {
-        Some(Commands::Package { python, .. }) => {
-            if *python {
-                /// Does nothing but getting this stubbed out
-                let python_package = package::python::Python {
-                    template_path: String::from("./templates/python"),
-                    output_path: String::from("./artifacts/python"),
-                    package_name: String::from("python"),
+        Some(Commands::Package { python, package, artifacts, .. }) => {
+            let mut files: Vec<PathBuf> = Vec::new();
+            for entry in WalkDir::new(artifacts).into_iter().filter_map(|e| e.ok()) {
+                let entry = entry.path();
+                if entry.is_file() {
+                    files.push(entry.to_path_buf());
                 };
-                python_package.create();
+            }
+            if *python {
+                // Does nothing but getting this stubbed out
+                PackagePython::create(
+                    None,
+                    package,
+                    &cli.output.clone(),
+                    files.clone(),
+                );
             }
         }
         _ => {}
@@ -162,7 +173,7 @@ fn main() {
 
                 let pedantic_plugin_location = find_plugin("protoc-gen-protobuf-to-pydantic")
                     .expect("GRPC Tools Python plugin not found");
-                let grpcio_plugin_path = find_plugin("grpc_tools_ruby_protoc_plugin")
+                let grpcio_plugin_path = find_plugin("protoc-gen-grpclib_python")
                     .expect("GRPC Tools Python plugin not found");
 
                 args.push(format!("{}{}", "--plugin=protoc-gen-protobuf-to-pydantic=", pedantic_plugin_location));
