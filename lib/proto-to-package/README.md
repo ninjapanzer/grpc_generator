@@ -1,7 +1,20 @@
-## Python Structure
+## Python Structure (Whl)
     output_dir/
-    ├── pyproject.toml
+    ├── ${project}.toml
     ├── README.md
-    └── my_package_name/
-    ├── __init__.py
-    └── ... (stub files and pydantic files)
+    └── ${project}/
+        ├── __init__.py
+        └── ... (grpc stubs, messages, and pydantic interfaces)
+## Ruby Structure (Gem)
+    output_dir/
+    ├── ${project}.gemspec
+    ├── README.md
+    └── ${project}/
+        ├── ${project}.rb
+        └── ... (grpc stubs, messages, and sorbet interfaces)
+## OAS Structure (ZIP)
+    output_dir/
+    ├── README.md
+    └── ${project}/
+        └── ... (OASv3 API YAML)
+    
